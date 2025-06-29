@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur Électrique - Recharge & Budget</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #3498db;
+      --primary-dark: #2980b9;
+      --secondary: #2c3e50;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --gray: #6c757d;
+      --card-bg: #ffffff;
+      --body-bg: #f0f4f8;
+      --text-color: #34495e;
+      --border-color: #e1e5ea;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-theme {
+      --card-bg: #2c3e50;
+      --body-bg: #1a2530;
+      --text-color: #ecf0f1;
+      --border-color: #34495e;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+    
+    body { 
+      font-family: 'Roboto', sans-serif; 
+      background: var(--body-bg); 
+      color: var(--text-color);
+      display: flex; 
+      justify-content: center; 
+      align-items: flex-start; 
+      padding: 20px;
+      min-height: 100vh;
+      transition: background 0.3s ease;
+    }
+    
+    .container { 
+      background: var(--card-bg); 
+      border-radius: 16px; 
+      box-shadow: var(--shadow); 
+      width: 100%; 
+      max-width: 800px; 
+      padding: 30px; 
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    
+    h2 { 
+      font-weight: 700; 
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.8rem;
+    }
+    
+    label { 
+      font-weight: 500; 
+      margin-top: 12px; 
+      display: block; 
+      margin-bottom: 6px;
+    }
+    
+    .input-group {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    
+    input[type="text"], 
+    input[type="number"] { 
+      width: 100%; 
+      padding: 12px 15px; 
+      margin-top: 4px; 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px; 
+      font-size: 1rem; 
+      transition: all 0.2s; 
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-color);
+    }
+    
+    input:focus { 
+      border-color: var(--primary); 
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); 
+      outline: none; 
+    }
+    
+    .input-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+    }
+    
+    button { 
+      background: var(--primary); 
+      color: #fff; 
+      border: none; 
+      border-radius: 8px; 
+      padding: 12px 20px; 
+      font-size: 1rem; 
+      cursor: pointer; 
+      margin: 8px 4px 0 0; 
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+    
+    button:disabled { 
+      background: var(--gray); 
+      cursor: not-allowed; 
+      opacity: 0.7;
+    }
+    
+    button:hover:not(:disabled) { 
+      background: var(--primary-dark); 
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .appareil-card { 
+      background: rgba(52, 152, 219, 0.05); 
+      border: 1px solid var(--border-color); 
+      border-radius: 12px; 
+      padding: 20px; 
+      margin-top: 20px; 
+      position: relative; 
+      opacity: 0; 
+      transform: translateY(-10px); 
+      transition: all 0.4s;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .appareil-card.visible { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+    
+    .remove-btn { 
+      position: absolute; 
+      top: 15px; 
+      right: 15px; 
+      background: transparent; 
+      border: none; 
+      color: var(--danger); 
+      font-size: 1.2rem; 
+      cursor: pointer; 
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .remove-btn:hover {
+      background: rgba(231, 76, 60, 0.1);
+    }
+    
+    .form-actions { 
+      text-align: right; 
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .result { 
+      margin-top: 30px; 
+      background: rgba(52, 152, 219, 0.1); 
+      padding: 20px; 
+      border-radius: 12px; 
+      font-size: 1.1rem; 
+      opacity: 0; 
+      transition: opacity 0.6s;
+      border-left: 4px solid var(--primary);
+    }
+    
+    .result.visible { 
+      opacity: 1; 
+    }
+    
+    canvas { 
+      margin: 30px auto 0; 
+      display: block; 
+      max-width: 100%; 
+      opacity: 0; 
+      transition: opacity 0.6s;
+    }
+    
+    .visible-chart { 
+      opacity: 1; 
+    }
+    
+    .theme-toggle {
+      background: var(--secondary);
+      color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .theme-toggle:hover {
+      transform: rotate(20deg);
+    }
+    
+    .error-message {
+      color: var(--danger);
+      font-size: 0.85rem;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .history {
+      margin-top: 30px;
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(52, 152, 219, 0.05);
+      border: 1px solid var(--border-color);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .history-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    
+    .history-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+      color: var(--primary);
+    }
+    
+    .history-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .history-item:last-child {
+      border-bottom: none;
+    }
+    
+    .grid-colspan-2 {
+      grid-column: span 2;
+    }
+    
+    .tabs {
+      display: flex;
+      background: rgba(52, 152, 219, 0.1);
+      border-radius: 50px;
+      padding: 5px;
+      margin-bottom: 25px;
+    }
+    
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      cursor: pointer;
+      border-radius: 50px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .page {
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    .info-badge {
+      background: rgba(52, 152, 219, 0.15);
+      color: var(--primary);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .info-badge i {
+      font-size: 1.5rem;
+    }
+    
+    .clear-history-btn {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 5px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+    
+    .clear-history-btn:hover {
+      background: rgba(231, 76, 60, 0.1);
+    }
+    
+    .empty-history {
+      text-align: center;
+      color: var(--gray);
+      font-style: italic;
+      padding: 10px;
+    }
+    
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .form-actions button {
+        width: 100%;
+        margin: 5px 0;
+      }
+      
+      .appareil-card {
+        padding: 15px;
+        grid-template-columns: 1fr;
+      }
+      
+      .grid-colspan-2 {
+        grid-column: span 1;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+      }
+      
+      .tabs {
+        flex-direction: column;
+        border-radius: 12px;
+      }
+    }
+  </style>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#317EFB">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker enregistré'))
+        .catch(err => console.log('Erreur Service Worker', err));
+    }
+  </script>
+
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2><i class="fas fa-bolt"></i> Calculateur Électrique</h2>
+      <div class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-moon"></i>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="recharge">Calculateur Recharge</div>
+      <div class="tab" data-tab="budget">Simulateur Budget</div>
+    </div>
+    
+    <!-- Page 1: Calculateur de recharge -->
+    <div id="recharge-page" class="page active">
+      <form id="tarif-form">
+        <div class="input-group">
+          <label for="tarifKWh"><i class="fas fa-coins"></i> Tarif (FCFA/kWh)</label>
+          <input type="number" id="tarifKWh" value="87" step="0.1" min="0">
+          <div class="error-message" id="tarif-error">Veuillez saisir un tarif valide</div>
+        </div>
+      </form>
+      
+      <form id="appareil-form">
+        <div id="appareils"></div>
+        <div class="form-actions">
+          <button type="button" id="add-btn" class="btn-outline"><i class="fas fa-plus"></i> Ajouter un appareil</button>
+          <div>
+            <button type="button" id="reset-btn" class="btn-outline"><i class="fas fa-trash-alt"></i> Réinitialiser</button>
+            <button type="submit" id="calc-btn" disabled><i class="fas fa-calculator"></i> Calculer</button>
+          </div>
+        </div>
+      </form>
+      
+      <div class="result" id="resultat"></div>
+      
+      <div id="chart-container">
+        <canvas id="camembert" width="400" height="400"></canvas>
+      </div>
+      
+      <div class="history" id="history-container">
+        <div class="history-title">
+          <div class="history-header">
+            <i class="fas fa-history"></i> Historique des calculs
+          </div>
+          <button class="clear-history-btn" id="clear-history">
+            <i class="fas fa-trash"></i> Effacer
+          </button>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+    
+    <!-- Page 2: Simulateur de budget -->
+    <div id="budget-page" class="page">
+      <div class="info-badge">
+        <i class="fas fa-info-circle"></i>
+        <div>Estimez le nombre de jours d'utilisation possible avec votre budget. Ajoutez vos appareils et leur consommation.</div>
+      </div>
+      
+      <form id="budget-form">
+        <div class="input-group">
+          <label for="budget"><i class="fas fa-wallet"></i> Votre budget (FCFA)</label>
+          <input type="number" id="budget" min="0" required>
+          <div class="error-message" id="budget-error">Veuillez saisir un budget valide</div>
+        </div>
+        
+        <div class="input-group">
+          <label for="budget-tarif"><i class="fas fa-coins"></i> Tarif (FCFA/kWh)</label>
+          <input type="number" id="budget-tarif" value="87" step="0.1" min="0">
+          <div class="error-message" id="budget-tarif-error">Veuillez saisir un tarif valide</div>
+        </div>
+      </form>
+      
+      <form id="budget-appareil-form">
+        <div id="budget-appareils"></div>
+        <div class="form-actions">
+          <button type="button" id="budget-add-btn" class="btn-outline"><i class="fas fa-plus"></i> Ajouter un appareil</button>
+          <div>
+            <button type="button" id="budget-reset-btn" class="btn-outline"><i class="fas fa-trash-alt"></i> Réinitialiser</button>
+            <button type="submit" id="budget-calc-btn" disabled><i class="fas fa-calculator"></i> Simuler</button>
+          </div>
+        </div>
+      </form>
+      
+      <div class="result" id="budget-result"></div>
+      
+      <div class="history" id="budget-history-container">
+        <div class="history-title">
+          <div class="history-header">
+            <i class="fas fa-history"></i> Historique des simulations
+          </div>
+          <button class="clear-history-btn" id="clear-budget-history">
+            <i class="fas fa-trash"></i> Effacer
+          </button>
+        </div>
+        <div id="budget-history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appareilCount = 0;
+    let budgetAppareilCount = 0;
+    let camembertChart;
+    
+    // Éléments DOM
+    const addBtn = document.getElementById('add-btn');
+    const calcBtn = document.getElementById('calc-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const themeToggle = document.getElementById('theme-toggle');
+    const historyList = document.getElementById('history-list');
+    
+    const budgetAddBtn = document.getElementById('budget-add-btn');
+    const budgetCalcBtn = document.getElementById('budget-calc-btn');
+    const budgetResetBtn = document.getElementById('budget-reset-btn');
+    const budgetHistoryList = document.getElementById('budget-history-list');
+    
+    const tabs = document.querySelectorAll('.tab');
+    const pages = document.querySelectorAll('.page');
+    
+    // Boutons d'effacement de l'historique
+    const clearHistoryBtn = document.getElementById('clear-history');
+    const clearBudgetHistoryBtn = document.getElementById('clear-budget-history');
+    
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+      ajouterAppareil();
+      ajouterBudgetAppareil();
+      
+      // Charger le thème depuis localStorage
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      }
+      
+      // Gestion des onglets
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+          
+          // Mettre à jour les onglets
+          tabs.forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Afficher la page correspondante
+          pages.forEach(page => page.classList.remove('active'));
+          document.getElementById(`${tabId}-page`).classList.add('active');
+        });
+      });
+      
+      // Événements d'effacement de l'historique
+      clearHistoryBtn.addEventListener('click', function() {
+        if (confirm('Voulez-vous vraiment effacer tout l\'historique des calculs ?')) {
+          historyList.innerHTML = '<div class="empty-history">Historique vide</div>';
+        }
+      });
+      
+      clearBudgetHistoryBtn.addEventListener('click', function() {
+        if (confirm('Voulez-vous vraiment effacer tout l\'historique des simulations ?')) {
+          budgetHistoryList.innerHTML = '<div class="empty-history">Historique vide</div>';
+        }
+      });
+    });
+    
+    // Événements - Page Recharge
+    addBtn.addEventListener('click', ajouterAppareil);
+    resetBtn.addEventListener('click', reinitialiser);
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    document.getElementById('appareil-form').addEventListener('input', function() {
+      const hasCards = document.querySelectorAll('#appareils .appareil-card').length > 0;
+      calcBtn.disabled = !hasCards || !validateTarif();
+    });
+    
+    document.getElementById('tarifKWh').addEventListener('input', function() {
+      validateTarif();
+    });
+    
+    document.getElementById('appareil-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      calculer();
+    });
+    
+    // Événements - Page Budget
+    budgetAddBtn.addEventListener('click', ajouterBudgetAppareil);
+    budgetResetBtn.addEventListener('click', reinitialiserBudget);
+    
+    document.getElementById('budget-appareil-form').addEventListener('input', function() {
+      const hasCards = document.querySelectorAll('#budget-appareils .appareil-card').length > 0;
+      const budget = parseFloat(document.getElementById('budget').value);
+      const tarif = parseFloat(document.getElementById('budget-tarif').value);
+      
+      budgetCalcBtn.disabled = !hasCards || isNaN(budget) || budget <= 0 || isNaN(tarif) || tarif <= 0;
+    });
+    
+    document.getElementById('budget').addEventListener('input', function() {
+      validateBudget();
+    });
+    
+    document.getElementById('budget-tarif').addEventListener('input', function() {
+      validateBudgetTarif();
+    });
+    
+    document.getElementById('budget-appareil-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      simulerBudget();
+    });
+    
+    // Fonctions communes
+    function toggleTheme() {
+      document.body.classList.toggle('dark-theme');
+      
+      if (document.body.classList.contains('dark-theme')) {
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        localStorage.setItem('theme', 'light');
+      }
+      
+      // Mettre à jour le graphique si existant
+      if (camembertChart) {
+        camembertChart.update();
+      }
+    }
+    
+    // Fonctions - Page Recharge
+    function ajouterAppareil() {
+      appareilCount++;
+      const card = document.createElement('div');
+      card.className = 'appareil-card';
+      card.innerHTML = `
+        <button class="remove-btn" title="Supprimer" aria-label="Supprimer"><i class="fas fa-times"></i></button>
+        <div class="input-group">
+          <label><i class="fas fa-tag"></i> Nom :</label>
+          <input type="text" class="appareil-nom" placeholder="Ex: Réfrigérateur" required>
+          <div class="error-message">Veuillez saisir un nom</div>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-plug"></i> Puissance (W) :</label>
+          <input type="number" class="appareil-puissance" min="0" required>
+          <div class="error-message">Veuillez saisir une puissance valide</div>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-clock"></i> Heures/jour :</label>
+          <input type="number" class="appareil-heures" min="0" max="24" step="0.1" required>
+          <div class="error-message">Veuillez saisir un nombre entre 0 et 24</div>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-calendar-day"></i> Jours/mois :</label>
+          <input type="number" class="appareil-jours" min="0" max="31" value="30" required>
+          <div class="error-message">Veuillez saisir un nombre entre 0 et 31</div>
+        </div>
+        <div class="input-group grid-colspan-2">
+          <label><i class="fas fa-layer-group"></i> Quantité :</label>
+          <input type="number" class="appareil-quantite" min="1" value="1" required>
+          <div class="error-message">Veuillez saisir une quantité valide (minimum 1)</div>
+        </div>
+      `;
+      
+      const removeBtn = card.querySelector('.remove-btn');
+      removeBtn.addEventListener('click', function() {
+        card.classList.remove('visible');
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+          card.remove();
+          document.getElementById('resultat').classList.remove('visible');
+          document.getElementById('camembert').classList.remove('visible-chart');
+          calcBtn.disabled = document.querySelectorAll('#appareils .appareil-card').length === 0;
+        }, 400);
+      });
+      
+      // Validation en temps réel
+      const inputs = card.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('input', function() {
+          validateInput(this);
+        });
+      });
+      
+      document.getElementById('appareils').appendChild(card);
+      
+      // Animation d'apparition
+      setTimeout(() => {
+        card.classList.add('visible');
+      }, 50);
+      
+      calcBtn.disabled = false;
+      return card;
+    }
+    
+    function validateInput(input) {
+      const errorMsg = input.parentElement.querySelector('.error-message');
+      let isValid = true;
+      
+      if (input.value.trim() === '') {
+        isValid = false;
+      } else if (input.type === 'number') {
+        const value = parseFloat(input.value);
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+        
+        if (isNaN(value)) {
+          isValid = false;
+        } else if (input.classList.contains('appareil-heures') && (value < 0 || value > 24)) {
+          isValid = false;
+        } else if (input.classList.contains('appareil-jours') && (value < 0 || value > 31)) {
+          isValid = false;
+        } else if (input.classList.contains('appareil-quantite') && value < 1) {
+          isValid = false;
+        }
+      }
+      
+      if (!isValid) {
+        input.style.borderColor = 'var(--danger)';
+        errorMsg.style.display = 'block';
+      } else {
+        input.style.borderColor = '';
+        errorMsg.style.display = 'none';
+      }
+      
+      return isValid;
+    }
+    
+    function validateTarif() {
+      const tarifInput = document.getElementById('tarifKWh');
+      const errorMsg = document.getElementById('tarif-error');
+      const value = parseFloat(tarifInput.value);
+      
+      if (isNaN(value) || value <= 0) {
+        tarifInput.style.borderColor = 'var(--danger)';
+        errorMsg.style.display = 'block';
+        return false;
+      }
+      
+      tarifInput.style.borderColor = '';
+      errorMsg.style.display = 'none';
+      return true;
+    }
+    
+    function validateAll() {
+      let isValid = validateTarif();
+      let invalidInputs = 0;
+      
+      document.querySelectorAll('#appareils .appareil-card').forEach(card => {
+        const inputs = card.querySelectorAll('input');
+        inputs.forEach(input => {
+          if (!validateInput(input)) {
+            invalidInputs++;
+          }
+        });
+      });
+      
+      return isValid && invalidInputs === 0;
+    }
+    
+    function calculer() {
+      if (!validateAll()) {
+        alert('Veuillez corriger les erreurs dans le formulaire avant de calculer.');
+        return;
+      }
+      
+      let totalKWh = 0;
+      let labels = [];
+      let data = [];
+      let colors = [];
+      const tarif = parseFloat(document.getElementById('tarifKWh').value);
+      
+      document.querySelectorAll('#appareils .appareil-card').forEach(card => {
+        const nom = card.querySelector('.appareil-nom').value;
+        const puissance = parseFloat(card.querySelector('.appareil-puissance').value);
+        const heures = parseFloat(card.querySelector('.appareil-heures').value);
+        const jours = parseFloat(card.querySelector('.appareil-jours').value);
+        const quantite = parseFloat(card.querySelector('.appareil-quantite').value);
+        
+        const kwh = (puissance * heures * jours * quantite) / 1000;
+        totalKWh += kwh;
+        
+        // Ajouter la quantité au nom si > 1
+        const label = quantite > 1 ? `${nom} (x${quantite})` : nom;
+        labels.push(label);
+        data.push(kwh);
+        colors.push(getRandomColor());
+      });
+      
+      const totalFCFA = totalKWh * tarif;
+      const result = document.getElementById('resultat');
+      
+      result.innerHTML = `
+        <div style="text-align: center; margin-bottom: 15px;">
+          <i class="fas fa-chart-pie" style="font-size: 2rem; color: var(--primary);"></i>
+        </div>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
+          <div style="text-align: center;">
+            <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">Consommation</div>
+            <div style="font-size: 1.8rem; font-weight: bold;">${totalKWh.toFixed(2)} kWh</div>
+            <div>par mois</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">Coût</div>
+            <div style="font-size: 1.8rem; font-weight: bold;">${totalFCFA.toFixed(0)} FCFA</div>
+            <div>par mois</div>
+          </div>
+        </div>
+        <div style="text-align: center; font-size: 0.9rem; color: var(--gray);">
+          <i class="fas fa-info-circle"></i> Tarif utilisé: ${tarif} FCFA/kWh
+        </div>
+        <div style="text-align: center; font-size: 0.9rem; color: var(--gray); margin-top: 15px;">
+          <i class="fas fa-lightbulb"></i> Vous avez saisi ${appareilCount} appareil(s) avec quantité
+        </div>
+      `;
+      
+      result.classList.add('visible');
+      afficherCamembert(labels, data, colors);
+      document.getElementById('camembert').classList.add('visible-chart');
+      
+      // Ajouter à l'historique
+      ajouterHistorique(totalKWh, totalFCFA, labels);
+      
+      // Scroll doux vers les résultats
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function afficherCamembert(labels, data, colors) {
+      const ctx = document.getElementById('camembert').getContext('2d');
+      
+      if (camembertChart) {
+        camembertChart.destroy();
+      }
+      
+      camembertChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderColor: 'var(--card-bg)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: {
+                  size: 12
+                },
+                padding: 20
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.chart.getDatasetMeta(0).total;
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${value.toFixed(2)} kWh (${percentage}%)`;
+                }
+              }
+            }
+          },
+          animation: {
+            animateScale: true,
+            animateRotate: true
+          }
+        }
+      });
+    }
+    
+    function getRandomColor() {
+      const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#8AC926', '#1982C4', '#6A4C93', '#F15BB5', '#00BBF9', '#00F5D4'
+      ];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    function reinitialiser() {
+      if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
+        document.getElementById('appareils').innerHTML = '';
+        document.getElementById('resultat').classList.remove('visible');
+        document.getElementById('camembert').classList.remove('visible-chart');
+        calcBtn.disabled = true;
+        appareilCount = 0;
+        ajouterAppareil();
+      }
+    }
+    
+    function ajouterHistorique(totalKWh, totalFCFA, appareils) {
+      // Vérifier si l'historique est vide
+      if (historyList.innerHTML.includes('empty-history')) {
+        historyList.innerHTML = '';
+      }
+      
+      const now = new Date();
+      const dateStr = now.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      historyItem.innerHTML = `
+        <div>
+          <div><strong>${totalKWh.toFixed(2)} kWh</strong></div>
+          <div style="font-size: 0.8rem; color: var(--gray);">${appareils.join(', ')}</div>
+        </div>
+        <div style="text-align: right;">
+          <div><strong>${totalFCFA.toFixed(0)} FCFA</strong></div>
+          <div style="font-size: 0.8rem; color: var(--gray);">${dateStr}</div>
+        </div>
+      `;
+      
+      historyList.insertBefore(historyItem, historyList.firstChild);
+      
+      // Limiter l'historique à 5 éléments
+      if (historyList.children.length > 5) {
+        historyList.removeChild(historyList.lastChild);
+      }
+    }
+    
+    // Fonctions - Page Budget
+    function ajouterBudgetAppareil() {
+      budgetAppareilCount++;
+      const card = document.createElement('div');
+      card.className = 'appareil-card';
+      card.innerHTML = `
+        <button class="remove-btn" title="Supprimer" aria-label="Supprimer"><i class="fas fa-times"></i></button>
+        <div class="input-group">
+          <label><i class="fas fa-tag"></i> Nom :</label>
+          <input type="text" class="appareil-nom" placeholder="Ex: Télévision" required>
+          <div class="error-message">Veuillez saisir un nom</div>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-plug"></i> Puissance (W) :</label>
+          <input type="number" class="appareil-puissance" min="0" required>
+          <div class="error-message">Veuillez saisir une puissance valide</div>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-clock"></i> Heures/jour :</label>
+          <input type="number" class="appareil-heures" min="0" max="24" step="0.1" required>
+          <div class="error-message">Veuillez saisir un nombre entre 0 et 24</div>
+        </div>
+        <div class="input-group grid-colspan-2">
+          <label><i class="fas fa-layer-group"></i> Quantité :</label>
+          <input type="number" class="appareil-quantite" min="1" value="1" required>
+          <div class="error-message">Veuillez saisir une quantité valide (minimum 1)</div>
+        </div>
+      `;
+      
+      const removeBtn = card.querySelector('.remove-btn');
+      removeBtn.addEventListener('click', function() {
+        card.classList.remove('visible');
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+          card.remove();
+          document.getElementById('budget-result').classList.remove('visible');
+          budgetCalcBtn.disabled = document.querySelectorAll('#budget-appareils .appareil-card').length === 0;
+        }, 400);
+      });
+      
+      // Validation en temps réel
+      const inputs = card.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('input', function() {
+          validateBudgetInput(this);
+        });
+      });
+      
+      document.getElementById('budget-appareils').appendChild(card);
+      
+      // Animation d'apparition
+      setTimeout(() => {
+        card.classList.add('visible');
+      }, 50);
+      
+      budgetCalcBtn.disabled = false;
+      return card;
+    }
+    
+    function validateBudgetInput(input) {
+      const errorMsg = input.parentElement.querySelector('.error-message');
+      let isValid = true;
+      
+      if (input.value.trim() === '') {
+        isValid = false;
+      } else if (input.type === 'number') {
+        const value = parseFloat(input.value);
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+        
+        if (isNaN(value)) {
+          isValid = false;
+        } else if (input.classList.contains('appareil-heures') && (value < 0 || value > 24)) {
+          isValid = false;
+        } else if (input.classList.contains('appareil-quantite') && value < 1) {
+          isValid = false;
+        }
+      }
+      
+      if (!isValid) {
+        input.style.borderColor = 'var(--danger)';
+        errorMsg.style.display = 'block';
+      } else {
+        input.style.borderColor = '';
+        errorMsg.style.display = 'none';
+      }
+      
+      return isValid;
+    }
+    
+    function validateBudget() {
+      const budgetInput = document.getElementById('budget');
+      const errorMsg = document.getElementById('budget-error');
+      const value = parseFloat(budgetInput.value);
+      
+      if (isNaN(value) || value <= 0) {
+        budgetInput.style.borderColor = 'var(--danger)';
+        errorMsg.style.display = 'block';
+        return false;
+      }
+      
+      budgetInput.style.borderColor = '';
+      errorMsg.style.display = 'none';
+      return true;
+    }
+    
+    function validateBudgetTarif() {
+      const tarifInput = document.getElementById('budget-tarif');
+      const errorMsg = document.getElementById('budget-tarif-error');
+      const value = parseFloat(tarifInput.value);
+      
+      if (isNaN(value) || value <= 0) {
+        tarifInput.style.borderColor = 'var(--danger)';
+        errorMsg.style.display = 'block';
+        return false;
+      }
+      
+      tarifInput.style.borderColor = '';
+      errorMsg.style.display = 'none';
+      return true;
+    }
+    
+    function validateBudgetAll() {
+      let isValid = validateBudget() && validateBudgetTarif();
+      
+      document.querySelectorAll('#budget-appareils .appareil-card').forEach(card => {
+        const inputs = card.querySelectorAll('input');
+        inputs.forEach(input => {
+          if (!validateBudgetInput(input)) {
+            isValid = false;
+          }
+        });
+      });
+      
+      return isValid;
+    }
+    
+    function simulerBudget() {
+      if (!validateBudgetAll()) {
+        alert('Veuillez corriger les erreurs dans le formulaire avant de simuler.');
+        return;
+      }
+      
+      const budget = parseFloat(document.getElementById('budget').value);
+      const tarif = parseFloat(document.getElementById('budget-tarif').value);
+      
+      let consommationTotaleParJour = 0;
+      let appareils = [];
+      
+      document.querySelectorAll('#budget-appareils .appareil-card').forEach(card => {
+        const nom = card.querySelector('.appareil-nom').value;
+        const puissance = parseFloat(card.querySelector('.appareil-puissance').value);
+        const heures = parseFloat(card.querySelector('.appareil-heures').value);
+        const quantite = parseFloat(card.querySelector('.appareil-quantite').value);
+        
+        const kwhParJour = (puissance * heures * quantite) / 1000;
+        consommationTotaleParJour += kwhParJour;
+        
+        appareils.push({
+          nom,
+          puissance,
+          heures,
+          quantite,
+          kwhParJour
+        });
+      });
+      
+      if (consommationTotaleParJour === 0) {
+        alert('La consommation totale ne peut pas être nulle. Vérifiez vos données.');
+        return;
+      }
+      
+      const coutParJour = consommationTotaleParJour * tarif;
+      const joursPossibles = budget / coutParJour;
+      
+      const result = document.getElementById('budget-result');
+      
+      let detailsHTML = '<div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">';
+      detailsHTML += '<div style="font-weight: bold; margin-bottom: 10px;">Détails par appareil:</div>';
+      
+      appareils.forEach(appareil => {
+        const pourcentage = (appareil.kwhParJour / consommationTotaleParJour * 100).toFixed(1);
+        detailsHTML += `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div>${appareil.nom}${appareil.quantite > 1 ? ` (x${appareil.quantite})` : ''}</div>
+            <div><strong>${appareil.kwhParJour.toFixed(2)} kWh/jour</strong> (${pourcentage}%)</div>
+          </div>
+        `;
+      });
+      
+      detailsHTML += '</div>';
+      
+      result.innerHTML = `
+        <div style="text-align: center; margin-bottom: 15px;">
+          <i class="fas fa-calendar-check" style="font-size: 2rem; color: var(--success);"></i>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="font-size: 1.2rem; font-weight: bold; color: var(--success);">Votre budget permet</div>
+          <div style="font-size: 2.5rem; font-weight: bold; color: var(--success);">${joursPossibles.toFixed(1)} jours</div>
+          <div>d'utilisation</div>
+        </div>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
+          <div style="text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">Consommation</div>
+            <div style="font-size: 1.5rem; font-weight: bold;">${consommationTotaleParJour.toFixed(2)} kWh</div>
+            <div>par jour</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">Coût</div>
+            <div style="font-size: 1.5rem; font-weight: bold;">${coutParJour.toFixed(0)} FCFA</div>
+            <div>par jour</div>
+          </div>
+        </div>
+        ${detailsHTML}
+        <div style="text-align: center; font-size: 0.9rem; color: var(--gray); margin-top: 15px;">
+          <i class="fas fa-info-circle"></i> Tarif utilisé: ${tarif} FCFA/kWh | Budget: ${budget.toFixed(0)} FCFA
+        </div>
+      `;
+      
+      result.classList.add('visible');
+      
+      // Ajouter à l'historique du budget
+      ajouterBudgetHistorique(joursPossibles, budget, consommationTotaleParJour);
+      
+      // Scroll doux vers les résultats
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function reinitialiserBudget() {
+      if (confirm('Êtes-vous sûr de vouloir réinitialiser le simulateur de budget ?')) {
+        document.getElementById('budget-appareils').innerHTML = '';
+        document.getElementById('budget-result').classList.remove('visible');
+        document.getElementById('budget').value = '';
+        budgetAppareilCount = 0;
+        ajouterBudgetAppareil();
+      }
+    }
+    
+    function ajouterBudgetHistorique(jours, budget, consommation) {
+      // Vérifier si l'historique est vide
+      if (budgetHistoryList.innerHTML.includes('empty-history')) {
+        budgetHistoryList.innerHTML = '';
+      }
+      
+      const now = new Date();
+      const dateStr = now.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      historyItem.innerHTML = `
+        <div>
+          <div><strong>${jours.toFixed(1)} jours</strong></div>
+          <div style="font-size: 0.8rem; color: var(--gray);">${consommation.toFixed(2)} kWh/jour</div>
+        </div>
+        <div style="text-align: right;">
+          <div><strong>${budget.toFixed(0)} FCFA</strong></div>
+          <div style="font-size: 0.8rem; color: var(--gray);">${dateStr}</div>
+        </div>
+      `;
+      
+      budgetHistoryList.insertBefore(historyItem, budgetHistoryList.firstChild);
+      
+      // Limiter l'historique à 5 éléments
+      if (budgetHistoryList.children.length > 5) {
+        budgetHistoryList.removeChild(budgetHistoryList.lastChild);
+      }
+    }
+  </script>
+</body>
+</html>
